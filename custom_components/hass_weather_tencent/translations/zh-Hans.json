@@ -100,5 +100,11 @@
         "name": "第七天天气预报"
       }
     }
+  },
+  "services": {
+    "get_forecast": {
+      "name": "获取天气预报",
+      "description": "从天气实体获取预报数据。"
+    }
   }
 }

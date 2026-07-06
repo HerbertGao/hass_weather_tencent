@@ -100,5 +100,11 @@
         "name": "6-Day Forecast"
       }
     }
+  },
+  "services": {
+    "get_forecast": {
+      "name": "Get forecast",
+      "description": "Get a weather forecast from a weather entity."
+    }
   }
 }

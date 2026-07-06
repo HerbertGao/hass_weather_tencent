@@ -124,19 +124,24 @@
 
 ```
 hass_weather_tencent/
+├── .github/workflows/
+│   ├── validate.yaml                        # HACS + Hassfest 验证 CI
+│   └── release.yaml                         # GitHub Release 自动发布（可选）
 ├── hacs.json                                # HACS 元数据
 ├── README.md                                # 本文档
+├── INFO.md                                  # HACS 商店简介
 ├── LICENSE
 └── custom_components/
     └── hass_weather_tencent/
         ├── __init__.py                      # 集成入口 + get_forecast 服务注册
-        ├── api.py                           # 腾讯地图 API 客户端
+        ├── api.py                           # 腾讯地图 API 客户端 + WGS84→GCJ02 转换
         ├── config_flow.py                   # 配置与选项流
         ├── const.py                         # 常量与映射表
         ├── coordinator.py                   # 数据更新协调器
         ├── diagnostics.py                   # 诊断导出
         ├── manifest.json                    # HA 集成清单
         ├── sensor.py                        # 传感器实体（预警 / AQI / 每日预报）
+        ├── services.yaml                    # 服务描述（get_forecast）
         ├── strings.json                     # 翻译键
         ├── weather.py                       # 天气实体
         └── translations/
@@ -191,7 +196,7 @@ A: 本集成已内置 WGS-84 → GCJ-02 坐标转换，正常情况下不应出�
 A: 腾讯 API 经纬度查询返回坐标所在**区县**的天气，若你位于边界地区，建议改用 `adcode` 模式精确定位。
 
 **Q: 每日预报只有 4 天**
-A: 在集成选项中将 "预报天数" 切换为 "当天+6天"（即 `get_md=1`）。
+A: 在集成选项中将 "预报天数" 切换为 "当天+6天"（即 `get_md=1`）。默认已为当天+6天。
 
 ---
 

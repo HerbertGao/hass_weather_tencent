@@ -1,0 +1,29 @@
+# Service descriptions for hass_weather_tencent.
+#
+# The integration registers a singular alias of the built-in
+# `weather.get_forecasts` (plural) service so that LLM integrations
+# (e.g. Extended OpenAI Conversation) which call `weather.get_forecast`
+# (singular) do not raise ServiceNotFound.
+#
+# The service lives under the `weather` domain, not under this
+# integration's domain — this file documents it for Hassfest compliance.
+get_forecast:
+  name: Get forecast
+  description: Get a weather forecast from a weather entity.
+  target:
+    entity:
+      integration: hass_weather_tencent
+      domain: weather
+  fields:
+    type:
+      name: Forecast type
+      description: The forecast type to return.
+      required: false
+      example: daily
+      default: daily
+      selector:
+        select:
+          options:
+            - daily
+            - hourly
+            - twice_daily
