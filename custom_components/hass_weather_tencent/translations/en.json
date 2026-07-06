@@ -1,0 +1,104 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Tencent Weather Configuration",
+        "description": "Enter your Tencent Maps API Key and select the configuration mode",
+        "data": {
+          "key": "Tencent Maps Key",
+          "mode": "Configuration Mode"
+        },
+        "data_description": {
+          "key": "Developer key obtained from the Tencent Maps Open Platform console",
+          "mode": "Choose whether to get weather data by administrative adcode or by location coordinates"
+        }
+      },
+      "adcode": {
+        "title": "Administrative Code",
+        "description": "Enter the 6-digit administrative adcode, e.g. 110105 for Chaoyang District, Beijing. Both city-level and district-level codes are supported.",
+        "data": {
+          "adcode": "Administrative Code",
+          "province": "Province (optional, auto-detected if empty)",
+          "city": "City (optional)",
+          "district": "District (optional)",
+          "location_name": "Custom Name (optional)"
+        }
+      },
+      "location": {
+        "title": "Select Location",
+        "description": "Select a location configured in Home Assistant. The Tencent Weather API will return weather for the district containing these coordinates.",
+        "data": {
+          "zone": "Location",
+          "location_name": "Custom Name",
+          "latitude": "Latitude",
+          "longitude": "Longitude"
+        }
+      }
+    },
+    "error": {
+      "invalid_key": "Invalid API Key, please check and try again",
+      "cannot_connect": "Cannot connect to Tencent Weather service, please check your network",
+      "unknown": "An unknown error occurred",
+      "invalid_location": "Invalid location selection",
+      "invalid_adcode": "Administrative code must be 6 digits",
+      "quota_exceeded": "Tencent Maps API quota exceeded — please retry later or check your key quota",
+      "api_error": "Tencent Weather API returned an error — check the Home Assistant log for the status code",
+      "no_weather_data": "No weather data for this coordinate's district — try configuring with an administrative code or a different coordinate"
+    },
+    "abort": {
+      "already_configured": "This location is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Tencent Weather Options",
+        "data": {
+          "update_interval": "Update Interval (seconds)",
+          "forecast_days": "Forecast Days",
+          "enable_alerts": "Enable Weather Alerts",
+          "enable_indexes": "Enable Life Indexes",
+          "enable_air": "Enable Air Quality"
+        },
+        "data_description": {
+          "update_interval": "Weather data update interval, range 300-7200 seconds, default 900 seconds (15 minutes)",
+          "forecast_days": "Today + 3 days, or Today + 6 days",
+          "enable_alerts": "Fetch the alarm field with realtime weather (type=now only)",
+          "enable_indexes": "Fetch the index life-index field with forecast weather (type=future only)",
+          "enable_air": "Fetch realtime and forecast air quality data"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "weather_alert": {
+        "name": "Weather Alert"
+      },
+      "aqi": {
+        "name": "Air Quality Index"
+      },
+      "forecast_today": {
+        "name": "Today's Weather Forecast"
+      },
+      "forecast_tomorrow": {
+        "name": "Tomorrow's Weather Forecast"
+      },
+      "forecast_day2": {
+        "name": "Day After Tomorrow Forecast"
+      },
+      "forecast_day3": {
+        "name": "3-Day Forecast"
+      },
+      "forecast_day4": {
+        "name": "4-Day Forecast"
+      },
+      "forecast_day5": {
+        "name": "5-Day Forecast"
+      },
+      "forecast_day6": {
+        "name": "6-Day Forecast"
+      }
+    }
+  }
+}

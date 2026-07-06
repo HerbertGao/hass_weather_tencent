@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: "actions/checkout@v4"
+
+      - name: Release
+        uses: "softprops/action-gh-release@v2"
+        with:
+          generate_release_notes: true
+          body: |
+            ## 腾讯天气 Home Assistant 集成
+
+            ### 安装方式
+            1. 在 HACS 中添加自定义仓库 `https://github.com/xyzmos/hass_weather_tencent`
+            2. 类别选择 **Integration**
+            3. 搜索 **腾讯天气** 并下载
+            4. 重启 Home Assistant
+
+            ### 更新内容
+            详见 [README.md](https://github.com/xyzmos/hass_weather_tencent/blob/main/README.md)
