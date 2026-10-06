@@ -8,9 +8,9 @@ from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import CONF_KEY
+from .const import CONF_KEY, CONF_LATITUDE, CONF_LONGITUDE
 
-TO_REDACT = {CONF_KEY}
+TO_REDACT = {CONF_KEY, CONF_LATITUDE, CONF_LONGITUDE}
 
 
 async def async_get_config_entry_diagnostics(

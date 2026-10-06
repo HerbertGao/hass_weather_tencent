@@ -2,6 +2,8 @@
 
 from datetime import timedelta
 
+from homeassistant.const import Platform
+
 DOMAIN = "hass_weather_tencent"
 
 # Configuration keys
@@ -57,7 +59,7 @@ KEY_AIR_NOW = "air_now"
 KEY_AIR_FORECAST = "air_forecast"
 
 # Platforms
-PLATFORMS = ["weather", "sensor"]
+PLATFORMS = [Platform.WEATHER, Platform.SENSOR]
 
 # Tencent weather description -> HA condition mapping
 # NOTE: The Tencent API doc lists descriptions like "晴", but the actual

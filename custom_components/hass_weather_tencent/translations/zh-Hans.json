@@ -33,6 +33,16 @@
           "latitude": "纬度",
           "longitude": "经度"
         }
+      },
+      "reauth_confirm": {
+        "title": "重新认证",
+        "description": "腾讯地图 Key 已失效或未被授权，请输入新的 Key",
+        "data": {
+          "key": "腾讯地图 Key"
+        },
+        "data_description": {
+          "key": "在腾讯地图开放平台控制台申请获得的开发者密钥"
+        }
       }
     },
     "error": {
@@ -46,7 +56,8 @@
       "no_weather_data": "该坐标所在区县暂无天气数据，请尝试使用行政区划代码配置或更换坐标"
     },
     "abort": {
-      "already_configured": "该地点已配置"
+      "already_configured": "该地点已配置",
+      "reauth_successful": "重新认证成功"
     }
   },
   "options": {

@@ -3,12 +3,12 @@
   "name": "腾讯天气",
   "codeowners": ["@xyzmos"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["weather"],
   "documentation": "https://github.com/xyzmos/hass_weather_tencent",
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/xyzmos/hass_weather_tencent/issues",
   "quality_scale": "silver",
-  "requirements": ["aiohttp>=3.8.0"],
+  "requirements": [],
   "version": "1.0.0"
 }

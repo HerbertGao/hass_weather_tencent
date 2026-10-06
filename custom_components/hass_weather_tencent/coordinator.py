@@ -7,11 +7,13 @@ them under stable keys consumed by the weather entity and sensors.
 
 from __future__ import annotations
 
+from datetime import timedelta
 import logging
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
@@ -85,8 +87,6 @@ class TencentWeatherCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         update_interval = config_entry.options.get(
             CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL.total_seconds()
         )
-        from datetime import timedelta
-
         if isinstance(update_interval, (int, float)):
             update_interval = timedelta(seconds=update_interval)
 
@@ -161,7 +161,9 @@ class TencentWeatherCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             )
             hours_raw = await self._fetch(TYPE_HOURS, [])
         except TencentWeatherAuthError as err:
-            raise UpdateFailed(f"API 认证失败: {err}") from err
+            # 认证失败（Key 无效/未授权）触发 HA 的 reauth 流程，
+            # 而不是无限重试。
+            raise ConfigEntryAuthFailed(f"API 认证失败: {err}") from err
         except TencentWeatherQuotaError as err:
             raise UpdateFailed(f"API 配额超限: {err}") from err
         except TencentWeatherConnectionError as err:

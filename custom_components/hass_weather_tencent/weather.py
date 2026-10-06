@@ -75,6 +75,7 @@ class TencentWeatherEntity(
     _attr_supported_features = (
         WeatherEntityFeature.FORECAST_DAILY
         | WeatherEntityFeature.FORECAST_HOURLY
+        | WeatherEntityFeature.FORECAST_TWICE_DAILY
     )
 
     def __init__(
@@ -156,7 +157,7 @@ class TencentWeatherEntity(
         wind_power = self._now_data.get("wind_power_v2") or self._now_data.get(
             "wind_power"
         )
-        return wind_power_to_speed(wind_power, WIND_BEARING_MAP)
+        return wind_power_to_speed(wind_power)
 
     @property
     def wind_bearing(self) -> float | str | None:
@@ -294,7 +295,7 @@ class TencentWeatherEntity(
             cond_text = day.get("weather") or night.get("weather")
             condition = map_condition(cond_text) if cond_text else None
 
-            wind_speed = wind_power_to_speed(day.get("wind_power"), WIND_BEARING_MAP)
+            wind_speed = wind_power_to_speed(day.get("wind_power"))
             wind_bearing = WIND_BEARING_MAP.get(day.get("wind_direction", ""))
 
             high = day.get("temperature")
@@ -331,9 +332,7 @@ class TencentWeatherEntity(
             cond_text = info.get("weather")
             condition = map_condition(cond_text) if cond_text else None
 
-            wind_speed = wind_power_to_speed(
-                info.get("wind_power"), WIND_BEARING_MAP
-            )
+            wind_speed = wind_power_to_speed(info.get("wind_power"))
             wind_bearing = WIND_BEARING_MAP.get(info.get("wind_direction", ""))
 
             entry: Forecast = Forecast(
@@ -344,6 +343,56 @@ class TencentWeatherEntity(
                 wind_bearing=wind_bearing,
             )
             out.append(entry)
+        return out
+
+    async def async_forecast_twice_daily(self) -> list[Forecast] | None:
+        """Return the twice-daily (day/night) forecast.
+
+        Tencent's future payload already provides distinct ``day`` and
+        ``night`` objects per date, so we expose them as the HA
+        ``twice_daily`` forecast type: daytime entries at 12:00
+        (is_daytime=True) and nighttime entries at 00:00
+        (is_daytime=False), Beijing time.
+        """
+        if self.coordinator.data is None:
+            return None
+        forecasts_raw = self.coordinator.data.get(KEY_FORECASTS, []) or []
+        if not forecasts_raw:
+            return None
+
+        out: list[Forecast] = []
+        for fc in forecasts_raw:
+            date_str = fc.get("date")
+            dt_day = _to_rfc3339_date(date_str, hour=12)
+            dt_night = _to_rfc3339_date(date_str, hour=0)
+            if dt_day is None or dt_night is None:
+                continue
+
+            day = fc.get("day") or {}
+            night = fc.get("night") or {}
+
+            out.append(
+                Forecast(
+                    datetime=dt_day,
+                    condition=map_condition(day.get("weather")),
+                    native_temperature=day.get("temperature"),
+                    native_wind_speed=wind_power_to_speed(day.get("wind_power")),
+                    wind_bearing=WIND_BEARING_MAP.get(day.get("wind_direction", "")),
+                    humidity=day.get("humidity"),
+                    is_daytime=True,
+                )
+            )
+            out.append(
+                Forecast(
+                    datetime=dt_night,
+                    condition=map_condition(night.get("weather")),
+                    native_temperature=night.get("temperature"),
+                    native_wind_speed=wind_power_to_speed(night.get("wind_power")),
+                    wind_bearing=WIND_BEARING_MAP.get(night.get("wind_direction", "")),
+                    humidity=night.get("humidity"),
+                    is_daytime=False,
+                )
+            )
         return out
 
 
@@ -368,13 +417,13 @@ def _aqi_level(aqi: float) -> str:
     return "严重污染"
 
 
-def _to_rfc3339_date(date_str: str | None) -> str | None:
-    """Convert "YYYY-MM-DD" to an RFC3339 string at 00:00 Beijing time."""
+def _to_rfc3339_date(date_str: str | None, hour: int = 0) -> str | None:
+    """Convert "YYYY-MM-DD" to an RFC3339 string in Beijing time."""
     if not date_str:
         return None
     try:
         dt = datetime.strptime(date_str, "%Y-%m-%d")
-        return dt.replace(tzinfo=_CN_TZ).isoformat()
+        return dt.replace(hour=hour, tzinfo=_CN_TZ).isoformat()
     except (ValueError, TypeError):
         return None
 

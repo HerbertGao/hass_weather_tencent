@@ -15,8 +15,8 @@
 - **完整适配 Home Assistant 天气实体接口**
   - 当前天气：温度、湿度、气压、风速、风向、臭氧
   - 原生单位：摄氏度 / hPa / km/h / km / mm
-  - 支持 `WeatherEntityFeature.FORECAST_DAILY` 与 `FORECAST_HOURLY`
-  - 实现 `async_forecast_daily` / `async_forecast_hourly` 返回 `Forecast` 列表
+  - 支持 `WeatherEntityFeature.FORECAST_DAILY` / `FORECAST_HOURLY` / `FORECAST_TWICE_DAILY`
+  - 实现 `async_forecast_daily` / `async_forecast_hourly` / `async_forecast_twice_daily` 返回 `Forecast` 列表（腾讯预报含独立白天/夜晚数据，`twice_daily` 直接映射）
 - **多源数据**：单次更新并行拉取 `now` / `future` / `hours` 三种查询类型
 - **附加字段可配置**：通过选项流启用 / 禁用
   - `alarm` 实时天气预警（仅 `type=now`）
@@ -30,7 +30,9 @@
   - 天气实体暴露 `extra_state_attributes`：包含当前中文天气描述、AQI 分项、每日 / 每小时预报、预警、生活指数
   - 每日预报传感器 `native_value` 为 `"多云 12~20°C"` 格式，便于 TTS 直接朗读
   - 自动注册 `weather.get_forecast`（单数）服务别名，兼容 Extended OpenAI Conversation 等 LLM 集成
-- **诊断支持**：通过 `diagnostics` 平台安全导出（密钥自动脱敏）
+- **诊断支持**：通过 `diagnostics` 平台安全导出（Key 与经纬度自动脱敏）
+- **认证失败自动触发 reauth**：Key 失效时 HA 会弹出重新认证流程，无需删除重建配置项
+- **兼容 HA 新旧版本**：自动适配 voluptuous（≤2026.5）与 probatio（2026.6+）表单 / 服务 schema，要求 HA ≥ 2024.11
 
 ---
 
@@ -88,6 +90,7 @@
 - `condition` / `native_temperature` / `humidity` / `native_pressure` / `native_wind_speed` / `wind_bearing` / `ozone`
 - `async_forecast_daily`：返回每日预报列表（含 `condition` / `native_temperature` / `native_templow` / `native_wind_speed` / `wind_bearing` / `humidity`）
 - `async_forecast_hourly`：返回未来 24 小时预报列表
+- `async_forecast_twice_daily`：白天（`is_daytime=true`，12:00）+ 夜晚（`is_daytime=false`，00:00）预报列表
 - `extra_state_attributes`（LLM 友好）：
   - `condition_cn` / `wind_direction_cn` / `wind_power` / `air_pressure`
   - `aqi` / `aqi_level` / `pm25` / `pm10` / `no2` / `o3` / `so2` / `co`
@@ -163,7 +166,7 @@ hass_weather_tencent/
 
 ### 时间格式
 
-`async_forecast_daily` / `async_forecast_hourly` 返回的 `datetime` 字段为 RFC 3339 格式，时区为北京时间（`+08:00`）。
+`async_forecast_daily` / `async_forecast_hourly` / `async_forecast_twice_daily` 返回的 `datetime` 字段为 RFC 3339 格式，时区为北京时间（`+08:00`）。`twice_daily` 白天条目取 12:00、夜晚条目取 00:00。
 
 ### 坐标系转换
 
@@ -178,7 +181,7 @@ hass_weather_tencent/
 | 状态码 | 含义 | 抛出异常 |
 | --- | --- | --- |
 | 0 | 正常 | — |
-| 110 / 111 / 112 / 113 / 190 / 199 | Key 无效 / 未授权 / 未开启 WebService | `TencentWeatherAuthError` → 提示 "无效的 Key" |
+| 110 / 111 / 112 / 113 / 190 / 199 | Key 无效 / 未授权 / 未开启 WebService | `TencentWeatherAuthError` → 配置流提示 "无效的 Key"，运行期触发 `ConfigEntryAuthFailed` → reauth |
 | 120 / 121 | QPS / 每日配额超限 | `TencentWeatherQuotaError` → 提示 "配额超限" |
 | 300+ / 500+ | 参数错误 / 服务异常 | `TencentWeatherApiError` → 提示具体错误并写入日志 |
 

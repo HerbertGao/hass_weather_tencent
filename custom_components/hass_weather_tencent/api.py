@@ -17,6 +17,8 @@ from .const import (
     TENCENT_WEATHER_API,
     TYPE_FUTURE,
     TYPE_NOW,
+    WIND_POWER_TEXT_MAP,
+    WIND_SPEED_MAP,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -234,8 +236,6 @@ def parse_wind_power(wind_power: str | None) -> int | None:
     if not wind_power:
         return None
     # Try text-based lookup first (covers "微风", "无风", "和风", "清风").
-    from .const import WIND_POWER_TEXT_MAP
-
     if wind_power in WIND_POWER_TEXT_MAP:
         return WIND_POWER_TEXT_MAP[wind_power]
     # Match all leading digits (covers "4-5级" -> 5, "4级" -> 4)
@@ -245,10 +245,8 @@ def parse_wind_power(wind_power: str | None) -> int | None:
     return max(int(m) for m in matches)
 
 
-def wind_power_to_speed(wind_power: str | None, speed_map: dict[int, float]) -> float | None:
+def wind_power_to_speed(wind_power: str | None) -> float | None:
     """Convert a Tencent wind_power string to a km/h value."""
-    from .const import WIND_SPEED_MAP
-
     level = parse_wind_power(wind_power)
     if level is None:
         return None

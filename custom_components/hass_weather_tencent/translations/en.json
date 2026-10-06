@@ -33,6 +33,16 @@
           "latitude": "Latitude",
           "longitude": "Longitude"
         }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate",
+        "description": "The Tencent Maps Key is invalid or no longer authorized. Enter a new Key.",
+        "data": {
+          "key": "Tencent Maps Key"
+        },
+        "data_description": {
+          "key": "Developer key obtained from the Tencent Maps Open Platform console"
+        }
       }
     },
     "error": {
@@ -46,7 +56,8 @@
       "no_weather_data": "No weather data for this coordinate's district — try configuring with an administrative code or a different coordinate"
     },
     "abort": {
-      "already_configured": "This location is already configured"
+      "already_configured": "This location is already configured",
+      "reauth_successful": "Re-authentication successful"
     }
   },
   "options": {

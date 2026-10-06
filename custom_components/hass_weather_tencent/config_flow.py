@@ -5,7 +5,11 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import voluptuous as vol
+try:
+    # HA 2026.6+ 用 probatio 替代 voluptuous 作为表单 schema 库
+    import probatio as vol
+except ImportError:
+    import voluptuous as vol
 
 from homeassistant.config_entries import (
     ConfigEntry,
@@ -324,6 +328,46 @@ class TencentWeatherConfigFlow(ConfigFlow, domain=DOMAIN):
         """Build a human-friendly location name from province/city/district."""
         parts = [p for p in (self._province, self._city, self._district) if p]
         return "".join(parts)
+
+    async def async_step_reauth(
+        self, entry_data: dict[str, Any]
+    ) -> ConfigFlowResult:
+        """Handle re-authentication when the API key is rejected."""
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Ask the user for a new Key and validate it."""
+        errors: dict[str, str] = {}
+        reauth_entry = self._get_reauth_entry()
+
+        if user_input is not None:
+            key = user_input[CONF_KEY].strip()
+            session = async_get_clientsession(self.hass)
+            client = TencentWeatherApiClient(session=session, key=key)
+            try:
+                valid = await client.async_validate_key()
+                if not valid:
+                    errors["base"] = "invalid_key"
+            except TencentWeatherConnectionError:
+                errors["base"] = "cannot_connect"
+            except TencentWeatherQuotaError:
+                errors["base"] = "quota_exceeded"
+            except TencentWeatherApiError:
+                errors["base"] = "unknown"
+
+            if not errors:
+                return self.async_update_reload_and_abort(
+                    reauth_entry,
+                    data={**reauth_entry.data, CONF_KEY: key},
+                )
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=vol.Schema({vol.Required(CONF_KEY): str}),
+            errors=errors,
+        )
 
     @staticmethod
     @callback

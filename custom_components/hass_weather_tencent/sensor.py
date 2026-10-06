@@ -13,7 +13,11 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
@@ -149,8 +153,8 @@ class TencentWeatherAqiSensor(_TencentBaseSensor):
     """Sensor entity for Air Quality Index (realtime)."""
 
     _attr_translation_key = "aqi"
-    _attr_icon = "mdi:air-filter"
-    _attr_state_class = "measurement"
+    _attr_device_class = SensorDeviceClass.AQI
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
