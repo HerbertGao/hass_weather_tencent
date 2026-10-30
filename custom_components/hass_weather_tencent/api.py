@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import logging
 import math
 import re
 from typing import Any
+from urllib.parse import urlparse
 
 import aiohttp
 
@@ -68,10 +70,17 @@ class TencentWeatherApiClient:
         self,
         session: aiohttp.ClientSession,
         key: str,
+        secret_key: str | None = None,
     ) -> None:
-        """Initialize the API client."""
+        """Initialize the API client.
+
+        ``secret_key`` is the WebService SN / 签名校验 Secret Key (SK).
+        When set, every request gets a ``sig`` query param per
+        https://lbs.qq.com/faq/serverFaq/webServiceKey
+        """
         self._session = session
         self._key = key
+        self._secret_key = (secret_key or "").strip() or None
 
     async def async_get_weather_by_adcode(
         self,
@@ -171,8 +180,32 @@ class TencentWeatherApiClient:
             params["added_fields"] = ",".join(added_fields)
         return params
 
+
+    @staticmethod
+    def _api_path() -> str:
+        """Path used both for the request URL and for SN signing (must match)."""
+        return urlparse(TENCENT_WEATHER_API).path or "/ws/weather/v1/"
+
+    def _sign_params(self, params: dict[str, Any]) -> dict[str, Any]:
+        """Return a copy of params with ``sig`` when Secret Key is configured.
+
+        Per Tencent docs: md5(path + "?" + sorted_raw_query + SK), lowercase.
+        Sign with raw (unencoded) values; aiohttp still URL-encodes on send.
+        ``sig`` itself is not included in the signed string.
+        """
+        out = dict(params)
+        if not self._secret_key:
+            return out
+        # Values must be strings of the raw values for stable signing.
+        items = sorted((k, "" if v is None else str(v)) for k, v in out.items())
+        query = "&".join(f"{k}={v}" for k, v in items)
+        raw = f"{self._api_path()}?{query}{self._secret_key}"
+        out["sig"] = hashlib.md5(raw.encode("utf-8")).hexdigest()
+        return out
+
     async def _async_request(self, params: dict[str, Any]) -> dict[str, Any]:
         """Make the GET request and return the cleaned `result` payload."""
+        params = self._sign_params(params)
         try:
             async with asyncio.timeout(30):
                 response = await self._session.get(

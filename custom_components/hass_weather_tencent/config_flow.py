@@ -36,6 +36,7 @@ from .const import (
     CONF_ENABLE_INDEXES,
     CONF_FORECAST_DAYS,
     CONF_KEY,
+    CONF_SECRET_KEY,
     CONF_LATITUDE,
     CONF_LOCATION_NAME,
     CONF_LONGITUDE,
@@ -62,6 +63,7 @@ class TencentWeatherConfigFlow(ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         """Initialize the config flow."""
         self._key: str = ""
+        self._secret_key: str = ""
         self._mode: str = ""
         self._province: str = ""
         self._city: str = ""
@@ -79,10 +81,13 @@ class TencentWeatherConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             self._key = user_input[CONF_KEY]
+            self._secret_key = (user_input.get(CONF_SECRET_KEY) or "").strip()
             self._mode = user_input[CONF_MODE]
 
             session = async_get_clientsession(self.hass)
-            client = TencentWeatherApiClient(session=session, key=self._key)
+            client = TencentWeatherApiClient(
+                session=session, key=self._key, secret_key=self._secret_key or None
+            )
             try:
                 valid = await client.async_validate_key()
                 if not valid:
@@ -104,6 +109,7 @@ class TencentWeatherConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Required(CONF_KEY): str,
+                    vol.Optional(CONF_SECRET_KEY, default=""): str,
                     vol.Required(CONF_MODE, default=MODE_ADCODE): vol.In(
                         {
                             MODE_ADCODE: "按行政区划代码选择",
@@ -144,7 +150,7 @@ class TencentWeatherConfigFlow(ConfigFlow, domain=DOMAIN):
                 # Validate by making a `now` request
                 session = async_get_clientsession(self.hass)
                 client = TencentWeatherApiClient(
-                    session=session, key=self._key
+                    session=session, key=self._key, secret_key=self._secret_key or None
                 )
                 try:
                     raw = await client.async_get_weather_by_adcode(
@@ -182,6 +188,7 @@ class TencentWeatherConfigFlow(ConfigFlow, domain=DOMAIN):
                     title=f"{self._build_location_name()}",
                     data={
                         CONF_KEY: self._key,
+                        CONF_SECRET_KEY: self._secret_key,
                         CONF_MODE: MODE_ADCODE,
                         CONF_ADCODE: self._adcode,
                         CONF_PROVINCE: self._province,
@@ -252,7 +259,7 @@ class TencentWeatherConfigFlow(ConfigFlow, domain=DOMAIN):
             if not errors:
                 session = async_get_clientsession(self.hass)
                 client = TencentWeatherApiClient(
-                    session=session, key=self._key
+                    session=session, key=self._key, secret_key=self._secret_key or None
                 )
                 try:
                     await client.async_get_weather_by_location(
@@ -287,6 +294,7 @@ class TencentWeatherConfigFlow(ConfigFlow, domain=DOMAIN):
                     title=f"腾讯天气 - {self._location_name}",
                     data={
                         CONF_KEY: self._key,
+                        CONF_SECRET_KEY: self._secret_key,
                         CONF_MODE: MODE_LOCATION,
                         CONF_LATITUDE: self._latitude,
                         CONF_LONGITUDE: self._longitude,
@@ -344,8 +352,11 @@ class TencentWeatherConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             key = user_input[CONF_KEY].strip()
+            secret_key = (user_input.get(CONF_SECRET_KEY) or "").strip()
             session = async_get_clientsession(self.hass)
-            client = TencentWeatherApiClient(session=session, key=key)
+            client = TencentWeatherApiClient(
+                session=session, key=key, secret_key=secret_key or None
+            )
             try:
                 valid = await client.async_validate_key()
                 if not valid:
@@ -360,12 +371,24 @@ class TencentWeatherConfigFlow(ConfigFlow, domain=DOMAIN):
             if not errors:
                 return self.async_update_reload_and_abort(
                     reauth_entry,
-                    data={**reauth_entry.data, CONF_KEY: key},
+                    data={
+                        **reauth_entry.data,
+                        CONF_KEY: key,
+                        CONF_SECRET_KEY: secret_key,
+                    },
                 )
 
         return self.async_show_form(
             step_id="reauth_confirm",
-            data_schema=vol.Schema({vol.Required(CONF_KEY): str}),
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_KEY): str,
+                    vol.Optional(
+                        CONF_SECRET_KEY,
+                        default=reauth_entry.data.get(CONF_SECRET_KEY, ""),
+                    ): str,
+                }
+            ),
             errors=errors,
         )
 

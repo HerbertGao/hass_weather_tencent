@@ -3,14 +3,16 @@
     "step": {
       "user": {
         "title": "腾讯天气配置",
-        "description": "请输入腾讯地图开放平台的 Key 密钥并选择配置模式",
+        "description": "请输入腾讯地图 Key；若控制台启用了 WebService「签名校验/SN」，请一并填写 Secret Key (SK)。域名白名单仅适用于浏览器 JSONP，HA 服务端调用请用授权 IP 或签名校验。",
         "data": {
           "key": "腾讯地图 Key",
-          "mode": "配置模式"
+          "mode": "配置模式",
+          "secret_key": "Secret Key (SK，签名校验，可选)"
         },
         "data_description": {
-          "key": "在腾讯地图开放平台控制台申请获得的开发者密钥",
-          "mode": "选择通过行政区划代码或地点经纬度来获取天气数据"
+          "key": "腾讯地图开放平台 WebService API Key",
+          "mode": "选择通过行政区划代码或地点经纬度来获取天气数据",
+          "secret_key": "控制台启用签名校验后生成的 SK；留空则不附加 sig（适合授权 IP / 不限制来源）"
         }
       },
       "adcode": {
@@ -36,12 +38,14 @@
       },
       "reauth_confirm": {
         "title": "重新认证",
-        "description": "腾讯地图 Key 已失效或未被授权，请输入新的 Key",
+        "description": "Key 或签名校验失败，请更新 Key，以及（若启用了 SN）Secret Key",
         "data": {
-          "key": "腾讯地图 Key"
+          "key": "腾讯地图 Key",
+          "secret_key": "Secret Key (SK，签名校验，可选)"
         },
         "data_description": {
-          "key": "在腾讯地图开放平台控制台申请获得的开发者密钥"
+          "key": "在腾讯地图开放平台控制台申请获得的开发者密钥",
+          "secret_key": "启用签名校验时必填；与控制台 SK 一致"
         }
       }
     },

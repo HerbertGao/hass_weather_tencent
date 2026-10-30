@@ -37,6 +37,7 @@ from .const import (
     CONF_ENABLE_INDEXES,
     CONF_FORECAST_DAYS,
     CONF_KEY,
+    CONF_SECRET_KEY,
     CONF_LATITUDE,
     CONF_LONGITUDE,
     CONF_MODE,
@@ -78,6 +79,7 @@ class TencentWeatherCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.api = TencentWeatherApiClient(
             session=async_get_clientsession(hass),
             key=config_entry.data[CONF_KEY],
+            secret_key=config_entry.data.get(CONF_SECRET_KEY),
         )
         self._mode = config_entry.data[CONF_MODE]
         self._adcode: str | None = config_entry.data.get(CONF_ADCODE)

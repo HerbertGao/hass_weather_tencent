@@ -8,6 +8,7 @@ DOMAIN = "hass_weather_tencent"
 
 # Configuration keys
 CONF_KEY = "key"
+CONF_SECRET_KEY = "secret_key"  # 腾讯 WebService SN/签名校验 Secret Key (SK)
 CONF_MODE = "mode"
 CONF_ADCODE = "adcode"
 CONF_LOCATION_NAME = "location_name"

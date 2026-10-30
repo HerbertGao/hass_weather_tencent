@@ -6,11 +6,13 @@
         "description": "Enter your Tencent Maps API Key and select the configuration mode",
         "data": {
           "key": "Tencent Maps Key",
-          "mode": "Configuration Mode"
+          "mode": "Configuration Mode",
+          "secret_key": "Secret Key (SK, optional SN signing)"
         },
         "data_description": {
           "key": "Developer key obtained from the Tencent Maps Open Platform console",
-          "mode": "Choose whether to get weather data by administrative adcode or by location coordinates"
+          "mode": "Choose whether to get weather data by administrative adcode or by location coordinates",
+          "secret_key": "SK from Tencent console when SN/signature check is enabled; leave empty to skip sig"
         }
       },
       "adcode": {
@@ -38,7 +40,8 @@
         "title": "Re-authenticate",
         "description": "The Tencent Maps Key is invalid or no longer authorized. Enter a new Key.",
         "data": {
-          "key": "Tencent Maps Key"
+          "key": "Tencent Maps Key",
+          "secret_key": "Secret Key (SK, optional)"
         },
         "data_description": {
           "key": "Developer key obtained from the Tencent Maps Open Platform console"
