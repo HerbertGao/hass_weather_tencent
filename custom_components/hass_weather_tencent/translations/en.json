@@ -38,13 +38,14 @@
       },
       "reauth_confirm": {
         "title": "Re-authenticate",
-        "description": "The Tencent Maps Key is invalid or no longer authorized. Enter a new Key.",
+        "description": "Key or signature verification failed. Enter a new Key and Secret Key (SK) if SN signing is enabled.",
         "data": {
           "key": "Tencent Maps Key",
           "secret_key": "Secret Key (SK, optional)"
         },
         "data_description": {
-          "key": "Developer key obtained from the Tencent Maps Open Platform console"
+          "key": "Developer key obtained from the Tencent Maps Open Platform console",
+          "secret_key": "SK from Tencent console when SN/signature check is enabled; leave empty to skip sig"
         }
       }
     },
